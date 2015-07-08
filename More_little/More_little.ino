@@ -1,5 +1,7 @@
 int val;
-int led = 6;
+
+int led = 6; 
+
 int ledGrean = 6; // 6 пин
 
 void setup()
