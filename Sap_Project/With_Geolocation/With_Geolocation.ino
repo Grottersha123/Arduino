@@ -9,6 +9,7 @@
 
 // Инициализация переменных
 DHT11 dht(11);
+
 int check;
 int Light_v;
 int Temp_v;
@@ -18,6 +19,8 @@ int Humidity_v;
 int ID_v;
 const int trigPin = 2;
 const int echoPin = 1;
+const double LAT = 54.923343;
+const double LON = 35.001327;
 // defines variables
 long duration;
 double distance;
@@ -71,7 +74,14 @@ delay(5000);
   
 }
 
-
+float Track_LAT(float lat)
+{
+  return abs(LAT - lat); 
+}
+float Track_LON(float lot)
+{
+  return abs(LON- lot); 
+}
 float Take_Location1(String jason)
 {
   int val = jason.indexOf("lat") + 5;
@@ -165,6 +175,70 @@ void pushToCloud1(float Lot, float Lat)
   //Serial.print(lon);
 }
 
+
+
+
+
+
+
+
+
+
+
+void pushToCloud_Model(float Lot, float Lat)
+{
+  //Передача данных в HCP с помощью встроенной в Linux служебной программы curl
+  // Строка для проверки передачи данных в HCP с Arduino в терминальном режиме
+  // Использовать через Putty
+  // Login: root
+  // Password: 12345678
+  //Distance();
+  // curl --header 'Authorization: Bearer 5adce4964138342473a663b2d22e8' --header 'Content-Type:application/json;charset=UTF-8' -k -X POST https://iotmmsp1941889917trial.hanatrial.ondemand.com/com.sap.iotservices.mms/v1/api/http/data/d70fbdef-dba4-4f59-85eb-9e8131582b3c --data '{"mode":"async","messageType":"091b562d43f936bef85b","messages":[{"Temperature":23, "Light":210, "Humidity":65, "ID":1}]}'
+  Process p;
+  p.begin("curl");
+  p.addParameter("-k");
+  p.addParameter("-f");
+  p.addParameter("-H");
+  p.addParameter("Authorization: Bearer 115666ccda8e12ffcd176f9a2c14b72");
+  p.addParameter("-H");
+  p.addParameter("Content-Type: application/json;charset=UTF-8");
+  //p.addParameter("-X");
+  p.addParameter("POST");
+  //p.addParameter("https://iotmmsp1942369040trial.hanatrial.ondemand.com/com.sap.iotservices.mms/v1/api/http/data/c2721cd2-3e96-4858-9cb6-7fb5d0c7a29e");//TLH
+  p.addParameter("https://iotmmsp1942369040trial.hanatrial.ondemand.com/com.sap.iotservices.mms/v1/api/http/data/9d791d17-f73f-47d7-941b-69ea6c670939"); //geo
+  p.addParameter("--data");
+  String str1;
+//  str = "{\"mode\":\"async\",\"messageType\":\"d59799c5a37c7a186f97\",\"messages\":[{\"Temperature\":" + String(Temperature_value) + ",\"Light\":" + String(Light_value) + ",\"Humidity\":" + String(Humidity_value) + ",\"ID\":" + String(ID_value) + "}]}";
+  str1 = "{\"mode\":\"async\",\"messageType\":\"289ffc0c7adba1446c17\",\"messages\":[{\"timestamp\":" + String(0) + ",\"Latitude\":" + String(Lot+Track_LON(Lot)) + ",\"Longitude\":" + String(Lat+Track_LAT(Lat)) + "}]}";
+  p.addParameter(str1);
+  p.run();
+  
+  //Вывод результата работы утилиты curl в серийный порт
+  Serial.println(str1);
+  Serial.print("Exit: ");
+  Serial.println(p.exitValue());
+  //Serial.println(lon);
+  //Serial.println(lat);
+  //Serial.print(lon);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void pushToCloud(int Temperature_value, int Light_value, int Humidity_value, int ID_value)
   {
   //Передача данных в HCP с помощью встроенной в Linux служебной программы curl
@@ -196,3 +270,4 @@ void pushToCloud(int Temperature_value, int Light_value, int Humidity_value, int
   Serial.print("Exit: ");
   Serial.println(p.exitValue());
 }
+
