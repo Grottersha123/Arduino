@@ -34,7 +34,7 @@ void setup() {
 //  Distance();
 //  dht.begin();
   ID_v = 0;
-  runCurl();
+  //runCurl();
  // Bridge.begin();
 
 }
@@ -64,8 +64,8 @@ void loop() {
   //Distance();
  // runCurl();
  pushToCloud1(lat,lon);
-delay(5000);
- pushToCloud(Temp_v, Light_v, Humidity_v, ID_v);
+//delay(5000);
+ //pushToCloud(Temp_v, Light_v, Humidity_v, ID_v);
  
  
   
@@ -176,6 +176,15 @@ void pushToCloud1(float Lot, float Lat)
 }
 
 
+static void smartdelay(unsigned long ms)
+{
+  unsigned long start = millis();
+  do
+  {
+    while (ss.available())
+      gps.encode(ss.read());
+  } while (millis() - start < ms);
+}
 
 
 

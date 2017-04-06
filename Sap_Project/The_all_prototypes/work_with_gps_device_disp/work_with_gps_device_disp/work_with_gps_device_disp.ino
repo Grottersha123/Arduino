@@ -3,7 +3,7 @@
 #include <SoftwareSerial.h>
 //начало вставки кода №1
 #include <Wire.h>
-#include <LiquidCrystal_I2C.h>
+//#include <LiquidCrystal_I2C.h>
 //конец вставки кода №1
 
 
@@ -33,7 +33,7 @@ SoftwareSerial ss(4, 3);
 
 static void smartdelay(unsigned long ms);
 //начало вставки кода №2
-LiquidCrystal_I2C lcd(0x27, 20, 4);
+//LiquidCrystal_I2C lcd(0x27, 20, 4);
 //конец вставки кода №2
 void setup()
 {

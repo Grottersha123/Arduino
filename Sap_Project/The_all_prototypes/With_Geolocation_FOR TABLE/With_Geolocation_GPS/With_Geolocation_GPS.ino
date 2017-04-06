@@ -48,6 +48,7 @@ void setup() {
 
   Bridge.begin();
   Serial.begin(9600);
+  pinMode(6, OUTPUT);
   //  Distance();
   //  dht.begin();
   ID_v = 0;
@@ -91,28 +92,47 @@ void loop() {
   a_2 = del1 / (flon - LON_1);
   LAT_1 += a_1 * (flat - LAT_1);
   LON_1 += a_2 * (flon - LON_1);
+  if (flat < 1000) {
+    Serial.print(" N ");
+    Serial.print(flat, 6);
+    Serial.print(" E ");
+    Serial.print(flon, 6);
+    digitalWrite(6, HIGH);
+}
+  digitalWrite(6, LOW);
   gps.f_get_position(&flat, &flon, &age);
+  
+  
   //char* LAT;
   //dtostrf(flat, 10, 7, LAT);
-  Serial.println(LAT_1);
-  Serial.println(LON_1, 12);
- 
+  Serial.println(flat);
+  Serial.println(flon);
 
   //Передача данных в HCP
   // get distance
   //Distance();
   // runCurl();
-   pushToCloud1(LAT_1,LON_1);
+
+
   //delay(5000);
   // pushToCloud(Temp_v, Light_v, Humidity_v, ID_v);
 
 
 
   // Distance();
-  delay(1000);
+smartdelay(1000);
 
 }
 
+static void smartdelay(unsigned long ms)
+{
+  unsigned long start = millis();
+  do
+  {
+    while (ss.available())
+      gps.encode(ss.read());
+  } while (millis() - start < ms);
+}
 
 float Take_Location1(String jason)
 {
@@ -177,35 +197,36 @@ void pushToCloud1(double Lot, double Lat)
   // Использовать через Putty
   // Login: root
   // Password: 12345678
+  // тОКЕН 614fcad8d24c7a7f15f8b7396361f MESSAGE TYPE 4fe03f9275d6cebfd622 AND MY DEVICE cd2be811-0012-4801-a542-6fdc18bea6e6
   //Distance();
   // curl --header 'Authorization: Bearer 5adce4964138342473a663b2d22e8' --header 'Content-Type:application/json;charset=UTF-8' -k -X POST https://iotmmsp1941889917trial.hanatrial.ondemand.com/com.sap.iotservices.mms/v1/api/http/data/d70fbdef-dba4-4f59-85eb-9e8131582b3c --data '{"mode":"async","messageType":"091b562d43f936bef85b","messages":[{"Temperature":23, "Light":210, "Humidity":65, "ID":1}]}'
   Process p;
   p.begin("curl");
   p.addParameter("-k");
   p.addParameter("-f");
-  p.addParameter("-H");
-  p.addParameter("Authorization: Bearer 115666ccda8e12ffcd176f9a2c14b72");
+  p.addParameter("-H");// МОИ ДАННЫЕ
+  p.addParameter("Authorization: Bearer 614fcad8d24c7a7f15f8b7396361f");
   p.addParameter("-H");
   p.addParameter("Content-Type: application/json;charset=UTF-8");
   //p.addParameter("-X");
   p.addParameter("POST");
   //p.addParameter("https://iotmmsp1942369040trial.hanatrial.ondemand.com/com.sap.iotservices.mms/v1/api/http/data/c2721cd2-3e96-4858-9cb6-7fb5d0c7a29e");//TLH
-  p.addParameter("https://iotmmsp1942369040trial.hanatrial.ondemand.com/com.sap.iotservices.mms/v1/api/http/data/9d791d17-f73f-47d7-941b-69ea6c670939"); //geo
+  p.addParameter("https://iotmmsp1942531213trial.hanatrial.ondemand.com/com.sap.iotservices.mms/v1/api/http/data/cd2be811-0012-4801-a542-6fdc18bea6e6"); //geo
   p.addParameter("--data");
   String str1;
   //  str = "{\"mode\":\"async\",\"messageType\":\"d59799c5a37c7a186f97\",\"messages\":[{\"Temperature\":" + String(Temperature_value) + ",\"Light\":" + String(Light_value) + ",\"Humidity\":" + String(Humidity_value) + ",\"ID\":" + String(ID_value) + "}]}";
   char tmp1[10];
   char tmp2[10];
-  dtostrf(Lot,1,6,tmp1);
+  dtostrf(Lot, 1, 6, tmp1);
   String strLab1 = "";
   String strOut1 = strLab1 + tmp1;
   //
-  dtostrf(Lat,1,6,tmp2);
+  dtostrf(Lat, 1, 6, tmp2);
   String strLab = "";
   String strOut = strLab + tmp2;
- // dtostrf(LAT_1,1,6,LAT);
- // dtostrf(LAT_1,1,6,LAT);
-  str1 = "{\"mode\":\"async\",\"messageType\":\"289ffc0c7adba1446c17\",\"messages\":[{\"timestamp\":" + String(0) + ",\"Latitude\":" + strOut1 + ",\"Longitude\":" + strOut + "}]}";
+  // dtostrf(LAT_1,1,6,LAT);
+  // dtostrf(LAT_1,1,6,LAT);
+  str1 = "{\"mode\":\"async\",\"messageType\":\"4fe03f9275d6cebfd622\",\"messages\":[{\"timestamp\":" + String(0) + ",\"Lat\":" + strOut1 + ",\"Lon\":" + strOut + "}]}";
   p.addParameter(str1);
   p.run();
 

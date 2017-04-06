@@ -1,14 +1,9 @@
-
-
-
-
-#include <TinyGPS.h>
 #include <SoftwareSerial.h>
 //начало вставки кода №1
 #include <Wire.h> 
-//#include <LiquidCrystal_I2C.h>
+#include <LiquidCrystal_I2C.h>
 //конец вставки кода №1
-
+#include <TinyGPS.h>
 
 /* This sample code demonstrates the normal use of a TinyGPS object.
    It requires the use of SoftwareSerial, and assumes that you have a
@@ -24,7 +19,7 @@ static void print_int(unsigned long val, unsigned long invalid, int len);
 static void print_date(TinyGPS &gps);
 static void print_str(const char *str, int len);
 //начало вставки кода №2
-
+LiquidCrystal_I2C lcd(0x27, 20, 4);
 //конец вставки кода №2
 void setup()
 {
@@ -38,10 +33,10 @@ void setup()
   Serial.println("-------------------------------------------------------------------------------------------------------------------------------------");
 
   ss.begin(9600);
-  while (!Serial) ;
   
  //начало вставки кода №3
-
+  lcd.begin();
+lcd.backlight();
 //конец вставки кода №3
 }
 
@@ -52,16 +47,19 @@ void loop()
   unsigned short sentences = 0, failed = 0;
   static const double LONDON_LAT = 51.508131, LONDON_LON = -0.128002;
   
- // gps.f_get_position(&flat, &flon, &age);
-//начало вставки кода №4
-//lcd.print(gps.f_altitude());
-Serial.print(" N ");
-Serial.print(flat, 6);
 
-Serial.print(" E ");
-Serial.print(flon, 6);
 //начало вставки кода №4
-print_int(gps.satellites(), TinyGPS::GPS_INVALID_SATELLITES, 5);
+      lcd.clear();
+//lcd.print(gps.f_altitude());
+lcd.print(" N ");
+lcd.print(flat, 6);
+lcd.setCursor(0, 1);
+lcd.print(" E ");
+lcd.print(flon, 6);
+//начало вставки кода №4
+
+
+  print_int(gps.satellites(), TinyGPS::GPS_INVALID_SATELLITES, 5);
   print_int(gps.hdop(), TinyGPS::GPS_INVALID_HDOP, 5);
   gps.f_get_position(&flat, &flon, &age);
   print_float(flat, TinyGPS::GPS_INVALID_F_ANGLE, 10, 6);
@@ -81,8 +79,6 @@ print_int(gps.satellites(), TinyGPS::GPS_INVALID_SATELLITES, 5);
   print_int(sentences, 0xFFFFFFFF, 10);
   print_int(failed, 0xFFFFFFFF, 9);
   Serial.println();
-  
-
   
 
   
