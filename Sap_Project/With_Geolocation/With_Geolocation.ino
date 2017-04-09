@@ -1,6 +1,18 @@
-#include <TroykaDHT11.h>
 
+#include <SoftwareSerial.h>
+//начало вставки кода №1
 
+//#include <LiquidCrystal_I2C.h>
+//конец вставки кода №1
+#include <TinyGPS.h>
+#include <Process.h>
+/* This sample code demonstrates the normal use of a TinyGPS object.
+   It requires the use of SoftwareSerial, and assumes that you have a
+   4800-baud serial GPS device hooked up on pins 4(rx) and 3(tx).
+*/
+
+TinyGPS gps;
+SoftwareSerial ss(8, 7);
 
 //#include <Ultrasonic.h>
 
@@ -8,7 +20,7 @@
 
 
 // Инициализация переменных
-DHT11 dht(11);
+//DHT11 dht(11);
 
 int check;
 int Light_v;
@@ -28,32 +40,45 @@ String jason;
 //Ultrasonic ultrasonic(1,2);
 
 void setup() {
-
-   Bridge.begin();
+  Bridge.begin();
+     ss.begin(9600);
   Serial.begin(9600);
+
 //  Distance();
 //  dht.begin();
+
   ID_v = 0;
+
   //runCurl();
  // Bridge.begin();
 
 }
 void loop() {
   // Считываем данные с цифрового датчика температуры и влажности
-  check = dht.read();
+//  check = dht.read();
 
   //Считываем уровень света
+ float flat, flon;
+  unsigned long age, date, time, chars = 0;
+  unsigned short sentences = 0, failed = 0;
+  static const double LONDON_LAT = 51.508131, LONDON_LON = -0.128002;
 
+
+  //начало вставки кода №4
+  //      lcd.clear();
+  //lcd.print(gps.f_altitude());
+  gps.f_get_position(&flat, &flon, &age);
+  
   Light_v = analogRead(A0);
   Serial.print("Light = ");
   Serial.println(Light_v);
   //Считываем уровень температуры
-  Temp_v = dht.getTemperatureC();
+//  Temp_v = dht.getTemperatureC();
   Serial.print("Temperature = ");
   Serial.print(Temp_v);
   Serial.println("C \t");
   //Считываем уровень влажности
-  Humidity_v = dht.getHumidity();
+//  Humidity_v = dht.getHumidity();
   Serial.print("Humidity = ");
   Serial.print(Humidity_v);
   Serial.println("%");
@@ -63,7 +88,8 @@ void loop() {
        // get distance
   //Distance();
  // runCurl();
- pushToCloud1(lat,lon);
+ 
+ pushToCloud1(flat,flon);
 //delay(5000);
  //pushToCloud(Temp_v, Light_v, Humidity_v, ID_v);
  
@@ -161,8 +187,17 @@ void pushToCloud1(float Lot, float Lat)
   p.addParameter("https://iotmmsp1942369040trial.hanatrial.ondemand.com/com.sap.iotservices.mms/v1/api/http/data/9d791d17-f73f-47d7-941b-69ea6c670939"); //geo
   p.addParameter("--data");
   String str1;
+  char tmp1[10];
+  char tmp2[10];
+  dtostrf(Lot, 1, 6, tmp1);
+  String strLab1 = "";
+  String strOut1 = strLab1 + tmp1;
+  //
+  dtostrf(Lat, 1, 6, tmp2);
+  String strLab = "";
+  String strOut = strLab + tmp2;
 //  str = "{\"mode\":\"async\",\"messageType\":\"d59799c5a37c7a186f97\",\"messages\":[{\"Temperature\":" + String(Temperature_value) + ",\"Light\":" + String(Light_value) + ",\"Humidity\":" + String(Humidity_value) + ",\"ID\":" + String(ID_value) + "}]}";
-  str1 = "{\"mode\":\"async\",\"messageType\":\"289ffc0c7adba1446c17\",\"messages\":[{\"timestamp\":" + String(0) + ",\"Latitude\":" + String(Lot) + ",\"Longitude\":" + String(Lat) + "}]}";
+  str1 = "{\"mode\":\"async\",\"messageType\":\"289ffc0c7adba1446c17\",\"messages\":[{\"timestamp\":" + String(0) + ",\"Latitude\":" + String(strOut1) + ",\"Longitude\":" + String(strOut) + "}]}";
   p.addParameter(str1);
   p.run();
   
@@ -173,17 +208,6 @@ void pushToCloud1(float Lot, float Lat)
   //Serial.println(lon);
   //Serial.println(lat);
   //Serial.print(lon);
-}
-
-
-static void smartdelay(unsigned long ms)
-{
-  unsigned long start = millis();
-  do
-  {
-    while (ss.available())
-      gps.encode(ss.read());
-  } while (millis() - start < ms);
 }
 
 

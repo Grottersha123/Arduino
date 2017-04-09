@@ -1,17 +1,17 @@
 #include <SoftwareSerial.h>
 //начало вставки кода №1
-#include <Wire.h>
+
 //#include <LiquidCrystal_I2C.h>
 //конец вставки кода №1
 #include <TinyGPS.h>
-
+#include <Process.h>
 /* This sample code demonstrates the normal use of a TinyGPS object.
    It requires the use of SoftwareSerial, and assumes that you have a
    4800-baud serial GPS device hooked up on pins 4(rx) and 3(tx).
 */
 
 TinyGPS gps;
-SoftwareSerial ss(4, 3);
+SoftwareSerial ss(8, 7);
 int led = 6;
 static void smartdelay(unsigned long ms);
 static void print_float(float val, float invalid, int len, int prec);
@@ -23,17 +23,14 @@ static void print_str(const char *str, int len);
 //конец вставки кода №2
 void setup()
 {
-  //Serial.begin(9600);
+  Bridge.begin();
+  Serial.begin(9600);
+  
  pinMode(led, OUTPUT);
-//while (!Serial);
-  Serial.print("Testing TinyGPS library v. "); Serial.println(TinyGPS::library_version());
-  Serial.println("by Mikal Hart");
-  Serial.println();
-  Serial.println("Sats HDOP Latitude  Longitude  Fix  Date       Time     Date Alt    Course Speed Card  Distance Course Card  Chars Sentences Checksum");
-  Serial.println("          (deg)     (deg)      Age                      Age  (m)    --- from GPS ----  ---- to London  ----  RX    RX        Fail");
-  Serial.println("-------------------------------------------------------------------------------------------------------------------------------------");
+
 
   ss.begin(9600);
+  
 
   //начало вставки кода №3
   // lcd.begin();
@@ -53,6 +50,8 @@ void loop()
   //начало вставки кода №4
   //      lcd.clear();
   //lcd.print(gps.f_altitude());
+  gps.f_get_position(&flat, &flon, &age);
+ 
   if (flat < 1000 && flat != 0) {
     Serial.print(" N ");
     Serial.print(flat, 6);
@@ -65,27 +64,7 @@ Serial.print(flat, 6);
 Serial.print(" E ");
 Serial.print(flon, 6);
 //начало вставки кода №4
-
-
-print_int(gps.satellites(), TinyGPS::GPS_INVALID_SATELLITES, 5);
-print_int(gps.hdop(), TinyGPS::GPS_INVALID_HDOP, 5);
-gps.f_get_position(&flat, &flon, &age);
-print_float(flat, TinyGPS::GPS_INVALID_F_ANGLE, 10, 6);
-print_float(flon, TinyGPS::GPS_INVALID_F_ANGLE, 11, 6);
-print_int(age, TinyGPS::GPS_INVALID_AGE, 5);
-print_date(gps);
-print_float(gps.f_altitude(), TinyGPS::GPS_INVALID_F_ALTITUDE, 7, 2);
-print_float(gps.f_course(), TinyGPS::GPS_INVALID_F_ANGLE, 7, 2);
-print_float(gps.f_speed_kmph(), TinyGPS::GPS_INVALID_F_SPEED, 6, 2);
-print_str(gps.f_course() == TinyGPS::GPS_INVALID_F_ANGLE ? "*** " : TinyGPS::cardinal(gps.f_course()), 6);
-print_int(flat == TinyGPS::GPS_INVALID_F_ANGLE ? 0xFFFFFFFF : (unsigned long)TinyGPS::distance_between(flat, flon, LONDON_LAT, LONDON_LON) / 1000, 0xFFFFFFFF, 9);
-print_float(flat == TinyGPS::GPS_INVALID_F_ANGLE ? TinyGPS::GPS_INVALID_F_ANGLE : TinyGPS::course_to(flat, flon, LONDON_LAT, LONDON_LON), TinyGPS::GPS_INVALID_F_ANGLE, 7, 2);
-print_str(flat == TinyGPS::GPS_INVALID_F_ANGLE ? "*** " : TinyGPS::cardinal(TinyGPS::course_to(flat, flon, LONDON_LAT, LONDON_LON)), 6);
-
-gps.stats(&chars, &sentences, &failed);
-print_int(chars, 0xFFFFFFFF, 6);
-print_int(sentences, 0xFFFFFFFF, 10);
-print_int(failed, 0xFFFFFFFF, 9);
+ pushToCloud1(flat,flon);
 Serial.println();
 
 
@@ -93,7 +72,42 @@ Serial.println();
 
 smartdelay(1000);
 }
-
+void pushToCloud1(float Lot, float Lat)
+{
+  //Передача данных в HCP с помощью встроенной в Linux служебной программы curl
+  // Строка для проверки передачи данных в HCP с Arduino в терминальном режиме
+  // Использовать через Putty
+  // Login: root
+  // Password: 12345678
+  //Distance();
+  // curl --header 'Authorization: Bearer 5adce4964138342473a663b2d22e8' --header 'Content-Type:application/json;charset=UTF-8' -k -X POST https://iotmmsp1941889917trial.hanatrial.ondemand.com/com.sap.iotservices.mms/v1/api/http/data/d70fbdef-dba4-4f59-85eb-9e8131582b3c --data '{"mode":"async","messageType":"091b562d43f936bef85b","messages":[{"Temperature":23, "Light":210, "Humidity":65, "ID":1}]}'
+  Process p;
+  p.begin("curl");
+  p.addParameter("-k");
+  p.addParameter("-f");
+  p.addParameter("-H");
+  p.addParameter("Authorization: Bearer 115666ccda8e12ffcd176f9a2c14b72");
+  p.addParameter("-H");
+  p.addParameter("Content-Type: application/json;charset=UTF-8");
+  //p.addParameter("-X");
+  p.addParameter("POST");
+  //p.addParameter("https://iotmmsp1942369040trial.hanatrial.ondemand.com/com.sap.iotservices.mms/v1/api/http/data/c2721cd2-3e96-4858-9cb6-7fb5d0c7a29e");//TLH
+  p.addParameter("https://iotmmsp1942369040trial.hanatrial.ondemand.com/com.sap.iotservices.mms/v1/api/http/data/9d791d17-f73f-47d7-941b-69ea6c670939"); //geo
+  p.addParameter("--data");
+  String str1;
+//  str = "{\"mode\":\"async\",\"messageType\":\"d59799c5a37c7a186f97\",\"messages\":[{\"Temperature\":" + String(Temperature_value) + ",\"Light\":" + String(Light_value) + ",\"Humidity\":" + String(Humidity_value) + ",\"ID\":" + String(ID_value) + "}]}";
+  str1 = "{\"mode\":\"async\",\"messageType\":\"289ffc0c7adba1446c17\",\"messages\":[{\"timestamp\":" + String(0) + ",\"Latitude\":" + String(Lot) + ",\"Longitude\":" + String(Lat) + "}]}";
+  p.addParameter(str1);
+  p.run();
+  
+  //Вывод результата работы утилиты curl в серийный порт
+  Serial.println(str1);
+  Serial.print("Exit: ");
+  Serial.println(p.exitValue());
+  //Serial.println(lon);
+  //Serial.println(lat);
+  //Serial.print(lon);
+}
 static void smartdelay(unsigned long ms)
 {
   unsigned long start = millis();
