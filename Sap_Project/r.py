@@ -67,8 +67,10 @@ def send_data_urllib(lat, lon):
 
 
 if __name__ == "__main__":
-    lat = sys.argv[-2]
-    lon = sys.argv[-1]
+   # lat = sys.argv[-2]
+    #lon = sys.argv[-1]
     # status = send_data(lat, lon)
-    status = send_data_urllib(lat, lon)
-    print(status)
+    ##a = {55.826068:37.387976,55.826045:37.388191,55.826023:37.388407,55.826001:37.388622,55.825979:37.388838,55.825956:37.389054,55.825934:37.389269,55.825912:37.389485,55.825889:37.3897,55.825867:37.389916}
+   # status = send_data(55.825862 ,37.387531)
+
+    #print(status)
