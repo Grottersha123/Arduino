@@ -24,9 +24,14 @@ print()
 """
 print()
 
-print("Координаты крокуса")
-for i in range(0,10):
-    first +=del1
-    second += del2
-    print(round(first,6),round(second,6))
+
+def coordinates(first,second,third,fourth,n):
+    del1 = (third - first) / n
+    del2 = (fourth - second) / n
+    for i in range(0,n):
+        first +=del1
+        second += del2
+        print(first,second)
+coordinates(first,second,third,fourth,n)
+        #return ()
 
